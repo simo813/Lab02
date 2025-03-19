@@ -1,27 +1,56 @@
+import re
+
+from dictionary import Dictionary  # Importa correttamente la classe Dictionary
+
 class Translator:
 
     def __init__(self):
-        pass
+        self.dictionary = Dictionary()  # Istanza corretta
 
     def printMenu(self):
-        # 1. Aggiungi nuova parola
-        # 2. Cerca una traduzione
-        # 3. Cerca con wildcard
-        # 4. Exit
-        pass
+        print("1. Aggiungi nuova parola")
+        print("2. Cerca una traduzione")
+        print("3. Cerca con wildcard")
+        print("4. Exit")
 
-    def loadDictionary(self, dict):
-        # dict is a string with the filename of the dictionary
-        pass
+    def loadDictionary(self, nomeFile):
+        with open(nomeFile, "r", encoding="utf-8") as file:
+            dizionario = {}
+            for riga in file:
+                campi = riga.rstrip("\n").split(" ")
+                if len(campi) >= 2:
+                    chiave = campi[0]
+                    valori = campi[1]  # Tutto il resto sono le traduzioni
+                    dizionario[chiave] = valori
+        self.dictionary.loaddiz(dizionario)  # Carichiamo il dizionario
+
+    def stampa(self):
+        """Stampa il dizionario caricato"""
+        for chiave in self.dictionary.dictionary:
+            print(chiave, self.dictionary.dictionary[chiave])
 
     def handleAdd(self, entry):
-        # entry is a tuple <parola_aliena> <traduzione1 traduzione2 ...>
-        pass
+        """Aggiunge una nuova parola al dizionario"""
+        campi = entry.split(" ")
+        if len(campi) < 2:
+            print("Formato non valido. Usa: <parola> <traduzione>")
+            return
+
+        chiave = campi[0]
+        valore = campi[1]
+        self.dictionary.addWord(chiave.lower(), valore)  # Usa self.dictionary
+
 
     def handleTranslate(self, query):
-        # query is a string <parola_aliena>
-        pass
+        traduzione = self.dictionary.translate(query.lower())
+        print("la traduzione di ", query, " è: ", traduzione)
 
-    def handleWildCard(self,query):
-        # query is a string with a ? --> <par?la_aliena>
-        pass
+
+    def handleWildCard(self, query):
+        """Cerca parole che corrispondono alla query con wildcard (?)"""
+        regex_pattern = query.replace("?", ".")  # Sostituisce ? con . (qualsiasi carattere)
+        regex_pattern = f"^{regex_pattern}$"  # Assicura che tutta la parola corrisponda
+
+        for chiave in self.dictionary.dictionary:
+            if re.match(regex_pattern, chiave):  # Controlla se la chiave corrisponde
+                self.dictionary.translateWordWildCard(chiave)
